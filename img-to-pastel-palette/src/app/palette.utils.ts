@@ -42,7 +42,7 @@ export function asyncImageValidator(
   control: AbstractControl
 ): Observable<{ [key: string]: any } | null> {
   return control.valueChanges.pipe(
-    debounceTime(1000),
+    debounceTime(500),
     distinctUntilChanged(),
     switchMap((value) => {
       if (!isValidUrl(value)) {
@@ -59,4 +59,13 @@ export function asyncImageValidator(
     }),
     take(1)
   );
+}
+
+export function toPastelColor(hex: string): string {
+  const rgb = parseInt(hex.slice(1), 16);
+  const r = ((rgb >> 16) & 0xff) + 0x60;
+  const g = ((rgb >> 8) & 0xff) + 0x60;
+  const b = (rgb & 0xff) + 0x60;
+
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 }

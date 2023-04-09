@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { asyncImageValidator } from '../palette.utils';
+import { PaletteService } from '../palette.service';
 
 @Component({
   selector: 'app-image-upload',
@@ -13,7 +14,7 @@ export class ImageUploadComponent implements OnInit {
   isFormSubmitted: boolean = false;
   validatingImageUrl = false;
 
-  constructor() {
+  constructor(private paletteService: PaletteService) {
     this.form = new FormGroup({
       imageUrl: new FormControl(null, {
         asyncValidators: [asyncImageValidator],
@@ -21,25 +22,31 @@ export class ImageUploadComponent implements OnInit {
     });
   }
 
-  setBackgroundImage() {
-    this.backgroundImageStyle = this.form?.value?.imageUrl as string;
+  private _onFormValid() {
+    this.paletteService.imageUrl.next(this.form.get('imageUrl')?.value);
   }
 
-  unsetBackgroundImage() {
-    this.backgroundImageStyle = null;
+  private _onFormInvalid() {
+    this.paletteService.imageUrl.next(null);
   }
 
-  submitForm() {
-    this.setBackgroundImage();
+  randomizeImage() {
+    this.form
+      .get('imageUrl')
+      ?.setValue(
+        `https://source.unsplash.com/random/&${
+          Math.floor(Math.random() * 100) + 1
+        }`
+      );
   }
 
   ngOnInit(): void {
     this.form.controls['imageUrl'].statusChanges.subscribe((status) => {
       this.validatingImageUrl = status === 'PENDING';
       if (status === 'VALID') {
-        this.setBackgroundImage();
+        this._onFormValid();
       } else {
-        this.unsetBackgroundImage();
+        this._onFormInvalid();
       }
     });
   }
